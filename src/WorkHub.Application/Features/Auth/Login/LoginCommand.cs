@@ -7,7 +7,5 @@ using WorkHub.Application.Common.Results;
 namespace WorkHub.Application.Features.Auth.Login
 {
     public sealed record LoginCommand(string Email, string Password)
-        : IRequest<Result<LoginResponse>>;
-
-    public sealed record LoginResponse(string AccessToken, DateTime ExpiresAtUtc);
+        : IRequest<Result<AuthResponse>>;
 }

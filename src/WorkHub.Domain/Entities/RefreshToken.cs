@@ -27,7 +27,7 @@ namespace WorkHub.Domain.Entities
             };
         }
 
-        public void Revoke() => RevokedAtUtc = DateTime.UtcNow;
+        public void Revoke() => RevokedAtUtc ??= DateTime.UtcNow;
 
     }
 }

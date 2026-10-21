@@ -24,6 +24,7 @@ namespace WorkHub.Infrastructure
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
             services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
             services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
 
             return services;
         }

@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using WorkHub.Api.Extensions;
 using WorkHub.Application.Features.Auth.Login;
 using WorkHub.Application.Features.Auth.Register;
+using WorkHub.Application.Features.Auth.LogoutAll;
+using WorkHub.Application.Features.Auth.Logout;
+using WorkHub.Application.Features.Auth.Refresh;
 
 namespace WorkHub.Api.Controllers
 {
@@ -34,6 +37,39 @@ namespace WorkHub.Api.Controllers
 
             return result.IsSuccess
                 ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(
+    RefreshTokenCommand command, CancellationToken cancellationToken)
+        {
+            var result = await _sender.Send(command, cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : result.ToProblem();
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(
+            LogoutCommand command, CancellationToken cancellationToken)
+        {
+            var result = await _sender.Send(command, cancellationToken);
+
+            return result.IsSuccess
+                ? NoContent()
+                : result.ToProblem();
+        }
+
+        [Authorize]
+        [HttpPost("logout-all")]
+        public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
+        {
+            var result = await _sender.Send(new LogoutAllCommand(), cancellationToken);
+
+            return result.IsSuccess
+                ? NoContent()
                 : result.ToProblem();
         }
 

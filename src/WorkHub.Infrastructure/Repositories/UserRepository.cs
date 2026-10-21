@@ -29,5 +29,11 @@ namespace WorkHub.Infrastructure.Repositories
 
         public async Task AddAsync(User user, CancellationToken cancellationToken = default)
             => await _context.Users.AddAsync(user, cancellationToken);
+
+        public Task<User?> GetByRefreshTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+    => _context.Users.Include(u => u.RefreshTokens)
+                     .FirstOrDefaultAsync(
+                         u => u.RefreshTokens.Any(t => t.TokenHash == tokenHash),
+                         cancellationToken);
     }
 }

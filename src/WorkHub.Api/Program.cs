@@ -6,10 +6,17 @@ using WorkHub.Api.Middleware;
 using WorkHub.Application;
 using WorkHub.Infrastructure;
 using WorkHub.Infrastructure.Auth;
+using System.Text.Json.Serialization;
+using WorkHub.Api.Authorization;
+using WorkHub.Api.Services;
+using WorkHub.Application.Common.Interfaces;
+using WorkHub.Domain.Enums;
+using WorkHub.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -32,6 +39,8 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -59,7 +68,10 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.AdminOnly, p => p.RequireRole(nameof(UserRole.Admin)))
+    .AddPolicy(Policies.Approvers, p => p.RequireRole(nameof(UserRole.Manager), nameof(UserRole.Admin)))
+    .AddPolicy(Policies.HrStaff, p => p.RequireRole(nameof(UserRole.HumanResources), nameof(UserRole.Admin)));
 
 var app = builder.Build();
 
@@ -85,5 +97,10 @@ app.MapGet("/health", () => Results.Ok(new
 }))
 .WithName("Health")
 .WithTags("Health");
+
+using (var scope = app.Services.CreateScope())
+{
+    await DbSeeder.SeedAsync(scope.ServiceProvider);
+}
 
 app.Run();

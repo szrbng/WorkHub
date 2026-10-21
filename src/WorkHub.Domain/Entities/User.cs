@@ -44,5 +44,22 @@ namespace WorkHub.Domain.Entities
         }
 
         public void Deactivate() => IsActive = false;
+
+        public RefreshToken? FindRefreshToken(string tokenHash)
+    => _refreshTokens.FirstOrDefault(t => t.TokenHash == tokenHash);
+
+        public void RevokeAllRefreshTokens()
+        {
+            foreach (var token in _refreshTokens.Where(t => t.IsActive))
+                token.Revoke();
+        }
+
+        public void ChangeRole(UserRole newRole)
+        {
+            if (!Enum.IsDefined(newRole))
+                throw new ArgumentOutOfRangeException(nameof(newRole), "Geçersiz rol.");
+
+            Role = newRole;
+        }
     }
 }
